@@ -1,0 +1,49 @@
+# Adaptive Range Mob Spawner Configuration
+
+# Minecraft default range for spawners activating and remaining active is 16 blocks.
+# 128 is the practical max value due to the mob spawning limit of Minecraft's natural entity activation range.
+
+# Initial spawner activation range.
+initial-spawner-range: 128
+
+# Spawner activity range when TPS is high.
+spawner-range-high: 128
+
+# Spawner activity range when TPS drops below the threshold.
+spawner-range-low: 16
+
+# TPS threshold to reduce spawner activity range to low.
+tps-threshold-low: 15.0
+
+# TPS threshold to restore spawner activity range to high.
+tps-threshold-high: 18.0
+
+# Interval in ticks for checking TPS and updating spawners in loaded chunks.
+# 20 ticks = 1 second, so 200 ticks = 10 seconds.
+update-interval-ticks: 200
+
+# If false, naturally generated spawners will be reverted to the vanilla activation range (16).
+affect-naturally-generated: false
+
+# If true, any preexisting spawners that lack the player-placed marker will be assumed to be player placed,
+# and will be updated accordingly. (WARNING: This will affect preexisting naturally generated spawners!)
+update-preexisting-spawners: false
+
+# Number of chunks to process per tick during startup to reduce lag.
+chunks-per-tick: 5
+
+# Enable or disable debug mode for detailed logging.
+debug-mode: false
+
+# If true, only update spawners in chunks near players.
+only-update-near-players: true
+
+# Radius (in chunks) around each player to update spawners.
+player-chunk-radius: 5
+
+# List of world names where spawner adjustments are disabled.
+disabled-worlds:
+  # - world_nether # Uncomment to disable spawner updates.
+  # - world_the_end # Uncomment to disable spawner updates.
+  # - world # Overworld # Uncomment to disable spawner updates.
+

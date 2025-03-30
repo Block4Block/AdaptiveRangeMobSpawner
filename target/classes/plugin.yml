@@ -1,0 +1,15 @@
+name: AdaptiveRangeMobSpawner
+main: hasjamon.block4block.AdaptiveRangeMobSpawner
+api-version: 1.21
+authors: [ HasJamOn, Bahm]
+version: 1.0
+description: Increase the spawners activation range and dynamically adjust it based on server TPS.
+permissions:
+  block4block.admin:
+    description: Allows admin control of Adaptive Range Mob Spawner
+    default: op
+commands:
+  adaptivespawner:
+    description: Manage Adaptive Range Mob Spawner
+    usage: /adaptivespawner [reload|debug|update]
+    permission: block4block.admin
