@@ -266,7 +266,16 @@ public class AdaptiveRangeMobSpawner extends JavaPlugin implements Listener {
     private double getTPS() {
         if (isPaper) {
             try {
-                // Use Paper's MSPT method to calculate TPS
+                // Use Paper's getTPS method (available in modern Paper versions)
+                Method getTpsMethod = Bukkit.getServer().getClass().getMethod("getTPS");
+                double[] tps = (double[]) getTpsMethod.invoke(Bukkit.getServer());
+                return tps[0]; // Get the 1-minute TPS average
+            } catch (Exception e) {
+                logDebug("Failed to get TPS via Paper's getTPS method: " + e.getMessage());
+            }
+
+            try {
+                // Try Paper's getTickTimes method as fallback
                 Method getTickTimesMethod = Bukkit.getServer().getClass().getMethod("getTickTimes");
                 double[] tickTimes = (double[]) getTickTimesMethod.invoke(Bukkit.getServer());
 
@@ -274,26 +283,41 @@ public class AdaptiveRangeMobSpawner extends JavaPlugin implements Listener {
                 double mspt = Arrays.stream(tickTimes)
                         .limit(100) // Use last 100 ticks
                         .average()
-                        .orElse(0);
+                        .orElse(50.0);
 
                 // Convert MSPT to TPS (capped at 20)
                 return Math.min(20.0, 1000.0 / Math.max(mspt, 1.0));
             } catch (Exception e) {
-                // Fall back to reflection if direct method fails
-                logDebug("Failed to get TPS via Paper methods: " + e.getMessage());
+                logDebug("Failed to get TPS via Paper's getTickTimes method: " + e.getMessage());
             }
         }
 
-        // Fall back to reflection method for non-Paper servers or if Paper method fails
+        // Fall back to reflection method for Spigot servers
         try {
             Object serverInstance = Bukkit.getServer().getClass().getMethod("getServer").invoke(Bukkit.getServer());
-            Field tpsField = serverInstance.getClass().getField("recentTps");
-            double[] tps = (double[]) tpsField.get(serverInstance);
-            return tps[0]; // Get the 1-minute TPS average
+
+            // Try "recentTps" field first (older versions)
+            try {
+                Field tpsField = serverInstance.getClass().getField("recentTps");
+                double[] tps = (double[]) tpsField.get(serverInstance);
+                return tps[0];
+            } catch (NoSuchFieldException e) {
+                // Try alternative field names or methods for newer versions
+                try {
+                    Method getTpsMethod = serverInstance.getClass().getMethod("getTPS");
+                    double[] tps = (double[]) getTpsMethod.invoke(serverInstance);
+                    return tps[0];
+                } catch (Exception ex) {
+                    logDebug("Could not find TPS method in server instance");
+                }
+            }
         } catch (Exception ex) {
             getLogger().warning("Failed to get server TPS: " + ex.getMessage());
-            return 20.0; // Default to optimal TPS if we can't get the actual value
         }
+
+        // If all methods fail, return 20.0 as default
+        getLogger().warning("Unable to retrieve server TPS - defaulting to 20.0. Plugin may not adjust spawner ranges correctly.");
+        return 20.0;
     }
 
     // Update all spawners in a chunk with the given range
